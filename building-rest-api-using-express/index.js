@@ -7,17 +7,29 @@ const fs = require("fs");
 // using the middleware to parse the form data
 app.use(express.urlencoded({ extended: false }));
 
-// middleware to add the 'id' to the user to be inserted
 app.use((req, res, next) => {
   if (req.path === "/api/users" && req.method === "POST") {
     req.body.id = users.length + 1;
   }
+  // always add 'X' to the custom headers
+  console.log(req.headers);
+  console.log(req.headers["content-type"]);
+  req.headers["Custom-Header-For-Request"] = "Random value";
+  console.log("Request Headers after modification", req.headers);
+  // console.log("Response Headers", res.headers); -> this doesn't works and gives us the undefined because there is no 'headers' object for response
+
+  // methods for setting, getting response headers
+  res.setHeader("X-Author", "Rajat");
+  res.set("X-msg", "This is a custom header set up by author");
+  console.log(res.getHeaders());
+  console.log(res.get("X-Author"));
+
   next();
 });
 
 // routes
 app.get("/", (req, res) => {
-  return res.send("Hello, this is homepage");
+  return res.status(200).send("Hello, this is homepage");
 });
 
 app.get("/users", (req, res) => {
@@ -28,11 +40,11 @@ app.get("/users", (req, res) => {
         </ul>
     `;
 
-  return res.send(html);
+  return res.status(200).send(html);
 });
 
 app.get("/api/users", (req, res) => {
-  return res.json(users);
+  return res.status(200).json(users);
 });
 
 app
@@ -42,9 +54,9 @@ app
 
     const userData = users.find((user) => user.id === userId);
     if (userData === undefined) {
-      return res.send(`No user with the id = ${userId} found`);
+      return res.status(404).send(`No user with the id = ${userId} found`);
     } else {
-      return res.json(userData);
+      return res.status(200).json(userData);
     }
   })
   .patch((req, res) => {
@@ -60,41 +72,57 @@ app
         if (err) {
           throw err;
         } else {
-          return res.send(
-            `The data sent is successfully updated for id ${users.length}`,
-          );
+          return res
+            .status(200)
+            .send(
+              `The data sent is successfully updated for id ${users.length}`,
+            );
         }
       });
     } else {
-      return res.send(`No user with the id = ${userId} found`);
+      return res.status(404).send(`No user with the id = ${userId} found`);
     }
   })
   .delete((req, res) => {
     const userId = Number(req.params.id);
     const userIndex = users.findIndex((user) => user.id === userId);
     if (userIndex === -1) {
-      return res.send(`No user with the id = ${userId} found`);
+      return res.status(404).send(`No user with the id = ${userId} found`);
     } else {
       users.splice(userId - 1, 1);
       fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err) => {
-        return res.send(
-          `The data sent is successfully deleted for id ${userId}`,
-        );
+        return res
+          .status(200)
+          .send(`The data sent is successfully deleted for id ${userId}`);
       });
     }
   });
 
 app.post("/api/users", (req, res) => {
   const reqBody = req.body;
+
+  if (
+    !reqBody ||
+    !reqBody.first_name ||
+    !reqBody.last_name ||
+    !reqBody.email ||
+    !reqBody.gender ||
+    !reqBody.job_title
+  ) {
+    return res.status(400).send("The payload is invalid");
+  }
+
   console.log(req.body.id);
   users.push(reqBody);
   fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err) => {
     if (err) {
       console.error("Error while writing to the file : ", err);
     } else {
-      return res.send(
-        `The data sent is successfully processed and entered with id ${users.length}`,
-      );
+      return res
+        .status(201)
+        .send(
+          `The data sent is successfully processed and entered with id ${users.length}`,
+        );
     }
   });
 });
