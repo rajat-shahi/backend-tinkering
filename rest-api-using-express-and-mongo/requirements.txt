@@ -1,0 +1,49 @@
+REST API - JSON with mongoDB for CRUD operations : 
+------------------------------------------------
+
+- GET '/users'
+    - List all users render HTML DOC
+
+
+
+- GET '/api/users' 
+    - List all users (JSON)
+
+
+
+- GET '/api/users/id' 
+    - GET '/api/users/1' => Get the user with ID 1 
+    - GET '/api/users/2' => Get the user with ID 2
+
+
+
+- POST '/api/users' 
+    - Create new user 
+    - 400 - invalid payload
+    - 201 - user created
+
+
+
+- PATCH '/api/users/id' 
+    - Edit the user with ID 1
+
+
+
+- DELETE '/api/users/id' 
+    - DELETE '/api/users/1' => Delete the user with ID 1
+
+
+
+MONGO DB SCHEMA : 
+---------------
+
+DB_NAME : rest-api-test
+COLLECTION : users
+
+SCHEMA : 
+    - firstName
+    - lastName
+    - email
+    - gender
+    - jobTitle
+    - timestamps
