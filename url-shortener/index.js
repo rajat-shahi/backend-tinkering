@@ -16,5 +16,26 @@ app.listen(PORT, () => {
 // middlewares
 app.use(express.json({ extended: false }));
 
+app.get("/test", async (req, res) => {
+  const allUrls = await url.find({});
+
+  let renderedHtml = `
+  <html>
+    <head></head>
+    <body>
+      <ol>
+        ${allUrls
+          .map((link) => {
+            return `<li><b>${link.shortId} - ${link.redirectUrl} - ${link.visitHistory.length}</b></li>`;
+          })
+          .join("")}
+      </ol>
+    </body>
+  </html>
+  `;
+
+  return res.send(renderedHtml);
+});
+
 app.use("/url", urlRouter);
 app.use("/", redirectRouter);
